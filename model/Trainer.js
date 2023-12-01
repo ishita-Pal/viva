@@ -1,7 +1,12 @@
-const productSchema = new Schema({
-  name: { type: String, required: true, maxLength: 255 },
-  description: { type: String, required: true, maxLength: 1000 },
-  price: { type: Number, required: true, min: 0 },
-  category: { type: String, required: true },
-  reviews: [reviewSchema] // Assuming you have a 'reviewSchema' defined somewhere
+const mongoose = require('mongoose');
+
+const reviewSchema = new mongoose.Schema({
+  content: { type: String, required: true, maxlength: 500 },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  author: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
+
+const Review = mongoose.model('Review', reviewSchema);
+
+module.exports = Review;

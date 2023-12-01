@@ -1,107 +1,65 @@
-const { urlencoded } = require("express");
-const Trainer = require("../model/Trainer");
+const Product = require('../models/product');
 
-const getAllTrainers = async (req, res, next) => {
-  let trainers;
+// Create a new product
+const createProduct = async (req, res) => {
   try {
-    trainers = await Trainer.find();
-  } catch (err) {
-    console.log(err);
+    const product = await Product.create(req.body);
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-
-  if (!trainers) {
-    return res.status(404).json({ message: "No products found" });
-  }
-  return res.status(200).json({ trainers });
 };
 
-const getById = async (req, res, next) => {
-  const id = req.params.id;
-  let trainer;
+// Retrieve all products with pagination
+const getAllProducts = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
   try {
-    trainer = await Trainer.findById(id);
-  } catch (err) {
-    console.log(err);
+    const products = await Product.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  if (!trainer) {
-    return res.status(404).json({ message: "No Trainer found" });
-  }
-  return res.status(200).json({ trainer });
 };
 
-const addTrainer = async (req, res, next) => {
-  const { name, descript,price,category,reviwe} = req.body;
-  let trainer;
+// Retrieve a specific product by ID
+const getProductById = async (req, res) => {
   try {
-    trainer = new Trainer({
-      name, descript,price,category,reviwe
+    const product = await Product.findById(req.params.id);
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Update a product by ID
+const updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
     });
-    await trainer.save();
-  } catch (err) {
-    console.log(err);
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-
-  if (!trainer) {
-    return res.status(500).json({ message: "Unable To Add" });
-  }
-  return res.status(201).json({ trainer });
 };
 
-const updateTrainer = async (req, res, next) => {
-  const id = req.params.id;
-  const { name, age, experience, qualification, rating} = req.body;
-  let trainer;
+// Delete a product by ID
+const deleteProduct = async (req, res) => {
   try {
-    trainer = await Trainer.findByIdAndUpdate(id, {
-      name,
-      age,
-      experience,
-      qualification,
-      rating
-     
-    });
-    trainer = await trainer.save();
-  } catch (err) {
-    console.log(err);
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  if (!trainer) {
-    return res.status(404).json({ message: "Unable To Update By this ID" });
-  }
-  return res.status(200).json({ trainer });
 };
 
-// const deleteBook = async (req, res, next) => {
-//   const id = req.params.id;
-//   let book;
-//   try {
-//     book = await Book.findByIdAndRemove(id);
-//   } catch (err) {
-//     console.log(err);
-//   }
-//   if (!book) {
-//     return res.status(404).json({ message: "Unable To Delete By this ID" });
-//   }
-//   return res.status(200).json({ message: "Product Successfully Deleted" });
-// };
-
-//book = trainer Book = Trainer
-
-const deleteTrainer = async (req, res, next) => {
-    const id = req.params.id;
-    try {
-      const trainer = await Trainer.findByIdAndDelete(id);
-      if (!trainer) {
-        return res.status(404).json({ message: "Unable to find trainer" });
-      }
-      return res.status(200).json({ message: "Trainer successfully deleted" });
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  };
-
-exports.getAllTrainers = getAllTrainers;
-exports.addTrainer = addTrainer;
-exports.getById = getById;
-exports.updateTrainer = updateTrainer;
-exports.deleteTrainer = deleteTrainer;
+module.exports = {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+};
